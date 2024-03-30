@@ -26,7 +26,6 @@ func (r *Repository) CreateDeck(ctx context.Context, deck *deck.Deck, tx *sql.Tx
 	params := database.CreateDeckParams{
 		ID:        uuid.MustParse(deck.ID),
 		Shuffled:  deck.Shuffled,
-		Remaining: int32(deck.Remaining),
 	}
 	databaseDeck, _err := r.DB.WithTx(tx).CreateDeck(ctx, params)
 	if _err != nil {

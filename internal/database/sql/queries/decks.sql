@@ -1,5 +1,5 @@
 -- name: CreateDeck :one
-INSERT INTO decks (id, shuffled, remaining) VALUES ($1, $2, $3) RETURNING *;
+INSERT INTO decks (id, shuffled) VALUES ($1, $2) RETURNING *;
 
 -- name: GetDeck :one
 SELECT * FROM decks WHERE id = $1;

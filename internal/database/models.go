@@ -14,7 +14,6 @@ import (
 type Deck struct {
 	ID        uuid.UUID
 	Shuffled  bool
-	Remaining int32
 	CreatedAt time.Time
 	UpdatedAt sql.NullTime
 }

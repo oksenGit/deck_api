@@ -64,5 +64,5 @@ func (h *Handler) CreateDeck(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Server Error 003", http.StatusInternalServerError)
 	}
 
-	helpers.RespondWithJSON(w, http.StatusCreated, resources.CreateDeckResource(*dbDeck))
+	helpers.RespondWithJSON(w, http.StatusCreated, resources.CreateDeckResource(*dbDeck, int32(deckObj.Remaining)))
 }

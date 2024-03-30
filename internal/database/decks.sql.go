@@ -12,22 +12,20 @@ import (
 )
 
 const createDeck = `-- name: CreateDeck :one
-INSERT INTO decks (id, shuffled, remaining) VALUES ($1, $2, $3) RETURNING id, shuffled, remaining, created_at, updated_at
+INSERT INTO decks (id, shuffled) VALUES ($1, $2) RETURNING id, shuffled, created_at, updated_at
 `
 
 type CreateDeckParams struct {
-	ID        uuid.UUID
-	Shuffled  bool
-	Remaining int32
+	ID       uuid.UUID
+	Shuffled bool
 }
 
 func (q *Queries) CreateDeck(ctx context.Context, arg CreateDeckParams) (Deck, error) {
-	row := q.db.QueryRowContext(ctx, createDeck, arg.ID, arg.Shuffled, arg.Remaining)
+	row := q.db.QueryRowContext(ctx, createDeck, arg.ID, arg.Shuffled)
 	var i Deck
 	err := row.Scan(
 		&i.ID,
 		&i.Shuffled,
-		&i.Remaining,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -35,7 +33,7 @@ func (q *Queries) CreateDeck(ctx context.Context, arg CreateDeckParams) (Deck, e
 }
 
 const getDeck = `-- name: GetDeck :one
-SELECT id, shuffled, remaining, created_at, updated_at FROM decks WHERE id = $1
+SELECT id, shuffled, created_at, updated_at FROM decks WHERE id = $1
 `
 
 func (q *Queries) GetDeck(ctx context.Context, id uuid.UUID) (Deck, error) {
@@ -44,7 +42,6 @@ func (q *Queries) GetDeck(ctx context.Context, id uuid.UUID) (Deck, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.Shuffled,
-		&i.Remaining,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

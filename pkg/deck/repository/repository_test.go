@@ -52,10 +52,6 @@ func TestCreateDeck(t *testing.T) {
 		t.Errorf("Expected deck shuffled to be %v, got %v", deckObj.Shuffled, dbDeck.Shuffled)
 	}
 
-	if dbDeck.Remaining != 52 {
-		t.Errorf("Expected deck remaining to be %v, got %v", len(deckObj.Cards), dbDeck.Remaining)
-	}
-
 	dbCards, err := repo.CreateDeckCards(context.Background(), dbDeck.ID, deckObj.Cards, tx)
 
 	if err != nil {
@@ -93,10 +89,6 @@ func TestGetDeckWithRemainingCards(t *testing.T) {
 
 	if deck.Shuffled != dbDeck.Shuffled {
 		t.Errorf("Expected deck shuffled to be %v, got %v", dbDeck.Shuffled, deck.Shuffled)
-	}
-
-	if deck.Remaining != dbDeck.Remaining {
-		t.Errorf("Expected deck remaining to be %v, got %v", dbDeck.Remaining, deck.Remaining)
 	}
 
 	remainingCards, err := repo.GetDeckRemainingCards(context.Background(), dbDeck.ID)
