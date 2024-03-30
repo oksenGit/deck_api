@@ -1,4 +1,4 @@
-module github.com/oksenGit/deck-api
+module github.com/oksenGit/deck_api
 
 go 1.22.1
 
