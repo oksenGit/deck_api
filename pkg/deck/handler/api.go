@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/go-chi/chi"
+	"github.com/google/uuid"
 	"github.com/oksenGit/deck_api/internal/deck"
 	"github.com/oksenGit/deck_api/internal/helpers"
 	"github.com/oksenGit/deck_api/pkg/deck/db"
@@ -64,5 +66,42 @@ func (h *Handler) CreateDeck(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Server Error 003", http.StatusInternalServerError)
 	}
 
-	helpers.RespondWithJSON(w, http.StatusCreated, resources.CreateDeckResource(*dbDeck, int32(deckObj.Remaining)))
+	helpers.RespondWithJSON(w, http.StatusCreated, resources.CreateDeckResource(dbDeck, int32(deckObj.Remaining)))
+}
+
+func (h *Handler) GetDeckWithRemainingCards(w http.ResponseWriter, r *http.Request) {
+	deckID := chi.URLParam(r, "deckID")
+
+	if deckID == "" {
+		helpers.RespondWithError(w, http.StatusBadRequest, "deck_id is required")
+		return
+	}
+
+	deckUUID, err := uuid.Parse(deckID)
+
+	if err != nil {
+		helpers.RespondWithError(w, http.StatusBadRequest, "deck_id is invalid")
+		return
+	}
+
+	deck, err := h.Repo.GetDeck(r.Context(), deckUUID)
+
+	if err != nil {
+		helpers.RespondWithError(w, http.StatusInternalServerError, "Server Error 004")
+		return
+	}
+
+	if deck == nil {
+		helpers.RespondWithError(w, http.StatusNotFound, "Deck not found")
+		return
+	}
+
+	deckCards, err := h.Repo.GetDeckRemainingCards(r.Context(), deckUUID)
+
+	if err != nil {
+		helpers.RespondWithError(w, http.StatusInternalServerError, "Server Error 005")
+		return
+	}
+
+	helpers.RespondWithJSON(w, http.StatusOK, resources.GetDeckWithRemainingCards(deck, deckCards))
 }

@@ -135,3 +135,40 @@ func TestCreateDeck(t *testing.T) {
 		assert.False(t, ok, "cards key exists")
 	})
 }
+
+func TestGetDeckWithRemainingCards(t *testing.T) {
+	t.Run("GetDeckWithRemainingCards", func(t *testing.T) {
+		appUrl := os.Getenv("APP_URL")
+		appPort := os.Getenv("PORT")
+		url := appUrl + ":" + appPort
+		resp, err := http.Post(url+"/v1/decks", "application/json", nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		var response map[string]interface{}
+		err = json.NewDecoder(resp.Body).Decode(&response)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		deckID := response["deck_id"].(string)
+
+		resp, err = http.Get(url + "/v1/decks/" + deckID)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = json.NewDecoder(resp.Body).Decode(&response)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode, "handler returned wrong status code")
+		assert.NotNil(t, response["deck_id"], "deck_id is nil")
+		assert.NotNil(t, response["shuffled"], "shuffled is nil")
+		assert.NotNil(t, response["remaining"], "remaining is nil")
+		assert.NotNil(t, response["cards"], "cards is nil")
+		assert.Equal(t, len(response["cards"].([]interface{})), 52, "cards length is not 52")
+	})
+}
