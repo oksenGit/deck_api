@@ -25,4 +25,5 @@ type DeckCard struct {
 	Drawn     bool
 	CreatedAt time.Time
 	UpdatedAt sql.NullTime
+	Order     int32
 }

@@ -12,16 +12,17 @@ import (
 )
 
 const createDeckCard = `-- name: CreateDeckCard :one
-INSERT INTO deck_cards (deck_id, card_code) VALUES ($1, $2) RETURNING deck_id, card_code, drawn, created_at, updated_at
+INSERT INTO deck_cards (deck_id, card_code, "order") VALUES ($1, $2, $3) RETURNING deck_id, card_code, drawn, created_at, updated_at, "order"
 `
 
 type CreateDeckCardParams struct {
 	DeckID   uuid.UUID
 	CardCode string
+	Order    int32
 }
 
 func (q *Queries) CreateDeckCard(ctx context.Context, arg CreateDeckCardParams) (DeckCard, error) {
-	row := q.db.QueryRowContext(ctx, createDeckCard, arg.DeckID, arg.CardCode)
+	row := q.db.QueryRowContext(ctx, createDeckCard, arg.DeckID, arg.CardCode, arg.Order)
 	var i DeckCard
 	err := row.Scan(
 		&i.DeckID,
@@ -29,6 +30,37 @@ func (q *Queries) CreateDeckCard(ctx context.Context, arg CreateDeckCardParams) 
 		&i.Drawn,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Order,
 	)
 	return i, err
+}
+
+const getDeckRemainingCards = `-- name: GetDeckRemainingCards :many
+SELECT card_code FROM deck_cards 
+WHERE deck_id = $1
+AND drawn = false
+ORDER BY "order" ASC
+`
+
+func (q *Queries) GetDeckRemainingCards(ctx context.Context, deckID uuid.UUID) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, getDeckRemainingCards, deckID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var card_code string
+		if err := rows.Scan(&card_code); err != nil {
+			return nil, err
+		}
+		items = append(items, card_code)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

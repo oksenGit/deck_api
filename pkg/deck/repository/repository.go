@@ -40,10 +40,11 @@ func (r *Repository) CreateDeck(ctx context.Context, deck *deck.Deck, tx *sql.Tx
 // CreateDeckCards creates new deck cards in the database.
 func (r *Repository) CreateDeckCards(ctx context.Context, deckID uuid.UUID, cards []deck.Card, tx *sql.Tx) ([]database.DeckCard, error) {
 	dbCards := make([]database.DeckCard, 0, len(cards))
-	for _, card := range cards {
+	for index, card := range cards {
 		params := database.CreateDeckCardParams{
 			DeckID:   deckID,
 			CardCode: card.Code,
+			Order:    int32(index),
 		}
 		dbCard, err := r.DB.WithTx(tx).CreateDeckCard(ctx, params)
 		dbCards = append(dbCards, dbCard)
@@ -53,4 +54,23 @@ func (r *Repository) CreateDeckCards(ctx context.Context, deckID uuid.UUID, card
 	}
 
 	return dbCards, nil
+}
+
+// Get Deck With Cards
+func (r *Repository) GetDeck(ctx context.Context, deckID uuid.UUID) (*database.Deck, error) {
+	deck, err := r.DB.GetDeck(ctx, deckID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &deck, nil
+}
+
+func (r *Repository) GetDeckRemainingCards(ctx context.Context, deckID uuid.UUID) ([]string, error) {
+	cards, err := r.DB.GetDeckRemainingCards(ctx, deckID)
+	if err != nil {
+		return nil, err
+	}
+
+	return cards, nil
 }

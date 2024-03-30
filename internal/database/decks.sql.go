@@ -33,3 +33,20 @@ func (q *Queries) CreateDeck(ctx context.Context, arg CreateDeckParams) (Deck, e
 	)
 	return i, err
 }
+
+const getDeck = `-- name: GetDeck :one
+SELECT id, shuffled, remaining, created_at, updated_at FROM decks WHERE id = $1
+`
+
+func (q *Queries) GetDeck(ctx context.Context, id uuid.UUID) (Deck, error) {
+	row := q.db.QueryRowContext(ctx, getDeck, id)
+	var i Deck
+	err := row.Scan(
+		&i.ID,
+		&i.Shuffled,
+		&i.Remaining,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}

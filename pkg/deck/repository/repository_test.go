@@ -20,6 +20,7 @@ func TestMain(m *testing.M) {
 	}
 
 	db.Init()
+	
 	defer db.Close()
 
 	code := m.Run()
@@ -63,5 +64,54 @@ func TestCreateDeck(t *testing.T) {
 
 	if len(dbCards) != len(deckObj.Cards) {
 		t.Errorf("Expected %v deck cards, got %v", len(deckObj.Cards), len(dbCards))
+	}
+}
+
+func TestGetDeckWithRemainingCards(t *testing.T) {
+	query := database.New(db.DB)
+	repo := NewRepository(query)
+
+	deckObj := deck.NewDeck(true, []string{})
+
+	tx, _ := db.DB.Begin()
+	defer tx.Rollback()
+
+	dbDeck, _ := repo.CreateDeck(context.Background(), deckObj, tx)
+
+	repo.CreateDeckCards(context.Background(), dbDeck.ID, deckObj.Cards, tx)
+	tx.Commit()
+
+	deck, err := repo.GetDeck(context.Background(), dbDeck.ID)
+
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	if deck.ID != dbDeck.ID {
+		t.Errorf("Expected deck ID to be %v, got %v", dbDeck.ID, deck.ID)
+	}
+
+	if deck.Shuffled != dbDeck.Shuffled {
+		t.Errorf("Expected deck shuffled to be %v, got %v", dbDeck.Shuffled, deck.Shuffled)
+	}
+
+	if deck.Remaining != dbDeck.Remaining {
+		t.Errorf("Expected deck remaining to be %v, got %v", dbDeck.Remaining, deck.Remaining)
+	}
+
+	remainingCards, err := repo.GetDeckRemainingCards(context.Background(), dbDeck.ID)
+
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	if len(remainingCards) != len(deckObj.Cards) {
+		t.Errorf("Expected %v remaining cards, got %v", len(deckObj.Cards), len(remainingCards))
+	}
+
+	for i, card := range remainingCards {
+		if card != deckObj.Cards[i].Code {
+			t.Errorf("Expected card %v to be %v, got %v", i, deckObj.Cards[i], card)
+		}
 	}
 }
