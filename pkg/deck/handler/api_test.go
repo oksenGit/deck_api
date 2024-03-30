@@ -58,7 +58,7 @@ func TestCreateDeck(t *testing.T) {
 
 		assert.NotNil(t, response["deck_id"], "deck_id is nil")
 		assert.NotNil(t, response["shuffled"], "shuffled is nil")
-		assert.Equal(t, response["shuffled"], true, "shuffled is not true")
+		assert.Equal(t, response["shuffled"], false, "shuffled is not true")
 		assert.NotNil(t, response["remaining"], "remaining is nil")
 		assert.Equal(t, response["remaining"], float64(52), "remaining is not 52")
 
@@ -126,7 +126,7 @@ func TestCreateDeck(t *testing.T) {
 
 		assert.NotNil(t, response["deck_id"], "deck_id is nil")
 		assert.NotNil(t, response["shuffled"], "shuffled is nil")
-		assert.Equal(t, response["shuffled"], true, "shuffled is not false")
+		assert.Equal(t, response["shuffled"], false, "shuffled is not false")
 		assert.NotNil(t, response["remaining"], "remaining is nil")
 		assert.Equal(t, response["remaining"], float64(2), "remaining is not 2")
 

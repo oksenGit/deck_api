@@ -23,7 +23,7 @@ func NewHandler(repo *repository.Repository) *Handler {
 
 func (h *Handler) CreateDeck(w http.ResponseWriter, r *http.Request) {
 	shuffledStr := r.URL.Query().Get("shuffled")
-	shuffled := shuffledStr == "" || shuffledStr == "true"
+	shuffled := shuffledStr == "true"
 
 	cards := r.URL.Query().Get("cards")
 
