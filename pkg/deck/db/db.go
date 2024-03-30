@@ -15,7 +15,7 @@ func Init() *sql.DB {
 	var err error
 
 	// Build connection string
-	connStr := os.Getenv("DB_URL")
+	connStr := os.Getenv("DATABASE_URL")
 
 	// Connect to PostgreSQL database
 	DB, err = sql.Open("postgres", connStr)

@@ -35,10 +35,12 @@ func generateCards(cards []string) []Card {
 	}
 
 	var deck []Card
+	var cardsSet = make(map[string]bool)
 	for _, code := range cards {
 		card := decodeCardCode(code)
-		if card != nil {
+		if card != nil  && !cardsSet[card.Code] {
 			deck = append(deck, *card)
+			cardsSet[card.Code] = true
 		}
 	}
 
@@ -59,17 +61,21 @@ func decodeCardCode(code string) *Card {
 		return nil
 	}
 
-	value := code[:1]
-	suit := code[1:]
+	value := DecodeCardValue(code[:1])
+	suit := DecodeCardSuit(code[1:])
+
+	if value == "" || suit == "" {
+		return nil
+	}
 
 	return &Card{
-		Value: decodeCardValue(value),
-		Suit:  decodeCardSuit(suit),
+		Value: value,
+		Suit:  suit,
 		Code:  code,
 	}
 }
 
-func decodeCardValue(value string) string {
+func DecodeCardValue(value string) string {
     cardValues := map[string]string{
         "A": "ACE",
         "2": "2",
@@ -89,7 +95,7 @@ func decodeCardValue(value string) string {
     return cardValues[value]
 }
 
-func decodeCardSuit(suit string) string {
+func DecodeCardSuit(suit string) string {
     cardSuits := map[string]string{
         "S": "SPADES",
         "C": "CLUBS",

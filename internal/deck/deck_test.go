@@ -51,6 +51,26 @@ func TestNewDeck(t *testing.T) {
 		shuffled := checkDeckShuffled(*deck, cards)
 		assert.Equal(t, false, shuffled)
 	})
+
+	t.Run("Create new deck with faulty custom cards", func(t *testing.T) {
+		cards := []string{"AS", "KD", "QC", "JH", "BD"}
+		deck := NewDeck(false, cards)
+		assert.NotNil(t, deck)
+		assert.Equal(t, 4, len(deck.Cards))
+		assert.Equal(t, false, deck.Shuffled)
+		shuffled := checkDeckShuffled(*deck, cards)
+		assert.Equal(t, false, shuffled)
+	})
+
+	t.Run("Create new deck with duplicate custom cards", func(t *testing.T) {
+		cards := []string{"AS", "AS", "AS", "AS", "AS"}
+		deck := NewDeck(false, cards)
+		assert.NotNil(t, deck)
+		assert.Equal(t, 1, len(deck.Cards))
+		assert.Equal(t, false, deck.Shuffled)
+		shuffled := checkDeckShuffled(*deck, cards)
+		assert.Equal(t, false, shuffled)
+	})
 }
 
 func TestDecodeCardCode(t *testing.T) {
