@@ -120,3 +120,42 @@ func TestGetDeckWithRemainingCards(t *testing.T) {
 		t.Errorf("Expected %v remaining cards, got %v", *limit, len(remainingCards))
 	}
 }
+
+func TestDrawCards(t *testing.T){
+	query := database.New(db.DB)
+	repo := NewRepository(query)
+
+	deckObj := deck.NewDeck(true, []string{})
+
+	tx, _ := db.DB.Begin()
+	defer tx.Rollback()
+
+	dbDeck, _ := repo.CreateDeck(context.Background(), deckObj, tx)
+
+	repo.CreateDeckCards(context.Background(), dbDeck.ID, deckObj.Cards, tx)
+	tx.Commit()
+
+	remainingCardsBeforeDrawing, _ := repo.GetDeckRemainingCards(context.Background(), dbDeck.ID, nil)
+
+
+	err := repo.SetDeckCardsDrawn(context.Background(), dbDeck.ID, remainingCardsBeforeDrawing[:5])
+
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	remainingCardsAfterDrawing, _ := repo.GetDeckRemainingCards(context.Background(), dbDeck.ID, nil)
+
+	// check that remaining cards before drawing are not the same as after drawing
+	if len(remainingCardsBeforeDrawing) <= len(remainingCardsAfterDrawing) {
+		t.Errorf("Expected remaining cards before drawing to be more than after drawing")
+	}
+
+	// check that top 5 cards were drawn
+	for i, card := range remainingCardsBeforeDrawing[:5] {
+		if card == remainingCardsAfterDrawing[i] {
+			t.Errorf("Expected card %v to be drawn", i)
+		}
+	}
+
+}

@@ -10,6 +10,7 @@ import (
 	"database/sql"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 const createDeckCard = `-- name: CreateDeckCard :one
@@ -70,4 +71,18 @@ func (q *Queries) GetDeckRemainingCards(ctx context.Context, arg GetDeckRemainin
 		return nil, err
 	}
 	return items, nil
+}
+
+const setDeckCardsDrawn = `-- name: SetDeckCardsDrawn :exec
+UPDATE deck_cards SET drawn = true WHERE deck_id = $1 AND card_code = ANY($2::text[])
+`
+
+type SetDeckCardsDrawnParams struct {
+	DeckID  uuid.UUID
+	Column2 []string
+}
+
+func (q *Queries) SetDeckCardsDrawn(ctx context.Context, arg SetDeckCardsDrawnParams) error {
+	_, err := q.db.ExecContext(ctx, setDeckCardsDrawn, arg.DeckID, pq.Array(arg.Column2))
+	return err
 }

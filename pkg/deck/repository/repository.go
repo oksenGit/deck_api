@@ -82,15 +82,11 @@ func (r *Repository) GetDeckRemainingCards(ctx context.Context, deckID uuid.UUID
 	return cards, nil
 }
 
-func (r *Repository) DrawCards(ctx context.Context, deckID uuid.UUID) ([]string, error) {
-	params := database.GetDeckRemainingCardsParams{
-		DeckID: deckID,
-		Limit:  sql.NullInt32{Valid: false},
+func (r *Repository) SetDeckCardsDrawn(ctx context.Context, deckID uuid.UUID, cardCodes []string) error {
+	params := database.SetDeckCardsDrawnParams{
+		DeckID:  deckID,
+		Column2: cardCodes,
 	}
-	cards, err := r.DB.GetDeckRemainingCards(ctx, params)
-	if err != nil {
-		return nil, err
-	}
-
-	return cards, nil
+	err := r.DB.SetDeckCardsDrawn(ctx, params)
+	return err
 }
