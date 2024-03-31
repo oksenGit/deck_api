@@ -38,14 +38,14 @@ func (h *Handler) CreateDeck(w http.ResponseWriter, r *http.Request) {
 	tx, err := db.DB.Begin()
 
 	if err != nil {
-		http.Error(w, "Server Error 001", http.StatusInternalServerError)
+		helpers.RespondWithError(w, http.StatusInternalServerError, "Server Error 001")
 		return
 	}
 
 	defer func() {
 		if err != nil {
 			tx.Rollback()
-			http.Error(w, "Server Error 002", http.StatusInternalServerError)
+			helpers.RespondWithError(w, http.StatusInternalServerError, "Server Error 002")
 		}
 	}()
 
@@ -64,7 +64,7 @@ func (h *Handler) CreateDeck(w http.ResponseWriter, r *http.Request) {
 
 	err = tx.Commit()
 	if err != nil {
-		http.Error(w, "Server Error 003", http.StatusInternalServerError)
+		helpers.RespondWithError(w, http.StatusInternalServerError, "Server Error 003")
 	}
 
 	helpers.RespondWithJSON(w, http.StatusCreated, resources.CreateDeckResource(dbDeck, int32(deckObj.Remaining)))
@@ -116,7 +116,7 @@ func (h *Handler) DrawCards(w http.ResponseWriter, r *http.Request) {
 	var req drawCardsRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		helpers.RespondWithError(w, http.StatusBadRequest,  err.Error())
 		return
 	}
 
