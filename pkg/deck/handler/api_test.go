@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/go-chi/chi"
 	"github.com/joho/godotenv"
 	"github.com/oksenGit/deck_api/internal/database"
 	"github.com/oksenGit/deck_api/pkg/deck/db"
@@ -137,11 +138,20 @@ func TestCreateDeck(t *testing.T) {
 }
 
 func TestGetDeckWithRemainingCards(t *testing.T) {
+	query := database.New(db.DB)
+	repo := repository.NewRepository(query)
+	h := NewHandler(repo)
+
 	t.Run("GetDeckWithRemainingCards", func(t *testing.T) {
-		appUrl := os.Getenv("APP_URL")
-		appPort := os.Getenv("PORT")
-		url := appUrl + ":" + appPort
-		resp, err := http.Post(url+"/v1/decks", "application/json", nil)
+		req, _ := http.NewRequest("POST", "/v1/decks", nil)
+		rr := httptest.NewRecorder()
+		handler := http.HandlerFunc(h.CreateDeck)
+
+		handler.ServeHTTP(rr, req)
+		server := httptest.NewServer(handler)
+		defer server.Close()
+
+		resp, err := http.Post(server.URL+"/v1/decks", "application/json", nil)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -153,18 +163,22 @@ func TestGetDeckWithRemainingCards(t *testing.T) {
 		}
 
 		deckID := response["deck_id"].(string)
+		router := chi.NewRouter()
+		router.Get("/v1/decks/{deckID}", h.GetDeckWithRemainingCards)
 
-		resp, err = http.Get(url + "/v1/decks/" + deckID)
+		req, _ = http.NewRequest("GET", "/v1/decks/"+deckID, nil)
+		rr = httptest.NewRecorder()
+		router.ServeHTTP(rr, req)
+		
+		assert.Equal(t, http.StatusOK, rr.Code, "handler returned wrong status code")
+		assert.NotNil(t, rr.Body, "handler returned no body")
+
+		err = json.Unmarshal(rr.Body.Bytes(), &response)
+
 		if err != nil {
 			t.Fatal(err)
 		}
-
-		err = json.NewDecoder(resp.Body).Decode(&response)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		assert.Equal(t, http.StatusOK, resp.StatusCode, "handler returned wrong status code")
+		
 		assert.NotNil(t, response["deck_id"], "deck_id is nil")
 		assert.NotNil(t, response["shuffled"], "shuffled is nil")
 		assert.NotNil(t, response["remaining"], "remaining is nil")
