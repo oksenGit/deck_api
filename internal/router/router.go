@@ -29,6 +29,7 @@ func Init() *chi.Mux {
 
 	v1Router.Post("/decks", deckHandler.CreateDeck)
 	v1Router.Get("/decks/{deckID}", deckHandler.GetDeckWithRemainingCards)
+	v1Router.Post("/decks-draw", deckHandler.DrawCards)
 
 	router.Mount("/v1", v1Router)
 	return router

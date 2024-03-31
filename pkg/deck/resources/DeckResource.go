@@ -17,6 +17,10 @@ type cardResource struct {
 	Code  string `json:"code"`
 }
 
+type cardsResource struct {
+	Cards []cardResource `json:"cards"`
+}
+
 type deckWithCardsResource struct {
 	deckResource
 	Cards []cardResource `json:"cards"`
@@ -49,4 +53,20 @@ func GetDeckWithRemainingCards(dbDeck *database.Deck, cards []string) deckWithCa
 	}
 
 	return deckWithCardsResource
+}
+
+func DrawCardsResource(cards []string) cardsResource {
+	cardsResource := cardsResource{
+		Cards: make([]cardResource, 0, len(cards)),
+	}
+
+	for _, cardCode := range cards {
+		cardsResource.Cards = append(cardsResource.Cards, cardResource{
+			Value: deck.DecodeCardValue(cardCode[:1]),
+			Suit:  deck.DecodeCardSuit(cardCode[1:]),
+			Code:  cardCode,
+		})
+	}
+
+	return cardsResource
 }

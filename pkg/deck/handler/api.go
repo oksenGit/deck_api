@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
 	"strings"
 
@@ -104,4 +105,66 @@ func (h *Handler) GetDeckWithRemainingCards(w http.ResponseWriter, r *http.Reque
 	}
 
 	helpers.RespondWithJSON(w, http.StatusOK, resources.GetDeckWithRemainingCards(deck, deckCards))
+}
+
+func (h *Handler) DrawCards(w http.ResponseWriter, r *http.Request) {
+	// get deck_id and count from request body
+	type drawCardsRequest struct {
+		DeckID string `json:"deck_id"`
+		Count  int    `json:"count"`
+	}
+	var req drawCardsRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	deckID := req.DeckID
+	count := req.Count
+
+	if deckID == "" {
+		helpers.RespondWithError(w, http.StatusBadRequest, "deck_id is required")
+		return
+	}
+
+	if count <= 0 {
+		helpers.RespondWithError(w, http.StatusBadRequest, "count must be greater than 0")
+		return
+	}
+
+	deckUUID, err := uuid.Parse(deckID)
+
+	if err != nil {
+		helpers.RespondWithError(w, http.StatusBadRequest, "deck_id is invalid")
+		return
+	}
+
+	deck, err := h.Repo.GetDeck(r.Context(), deckUUID)
+
+	if err != nil {
+		helpers.RespondWithError(w, http.StatusInternalServerError, "Server Error 006")
+		return
+	}
+
+	if deck == nil {
+		helpers.RespondWithError(w, http.StatusNotFound, "Deck not found")
+		return
+	}
+
+	deckCards, err := h.Repo.GetDeckRemainingCards(r.Context(), deckUUID, &count)
+
+	if err != nil {
+		helpers.RespondWithError(w, http.StatusInternalServerError, "Server Error 007")
+		return
+	}
+
+	err = h.Repo.SetDeckCardsDrawn(r.Context(), deckUUID, deckCards)
+
+	if err != nil {
+		helpers.RespondWithError(w, http.StatusInternalServerError, "Server Error 008")
+		return
+	}
+
+	helpers.RespondWithJSON(w, http.StatusOK, resources.DrawCardsResource(deckCards))
 }
