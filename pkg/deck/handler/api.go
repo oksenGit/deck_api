@@ -96,7 +96,7 @@ func (h *Handler) GetDeckWithRemainingCards(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	deckCards, err := h.Repo.GetDeckRemainingCards(r.Context(), deckUUID)
+	deckCards, err := h.Repo.GetDeckRemainingCards(r.Context(), deckUUID, nil)
 
 	if err != nil {
 		helpers.RespondWithError(w, http.StatusInternalServerError, "Server Error 005")

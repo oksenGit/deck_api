@@ -91,7 +91,7 @@ func TestGetDeckWithRemainingCards(t *testing.T) {
 		t.Errorf("Expected deck shuffled to be %v, got %v", dbDeck.Shuffled, deck.Shuffled)
 	}
 
-	remainingCards, err := repo.GetDeckRemainingCards(context.Background(), dbDeck.ID)
+	remainingCards, err := repo.GetDeckRemainingCards(context.Background(), dbDeck.ID, nil)
 
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)

@@ -24,8 +24,8 @@ func NewRepository(db *database.Queries) *Repository {
 // CreateDeck creates a new deck in the database.
 func (r *Repository) CreateDeck(ctx context.Context, deck *deck.Deck, tx *sql.Tx) (*database.Deck, error) {
 	params := database.CreateDeckParams{
-		ID:        uuid.MustParse(deck.ID),
-		Shuffled:  deck.Shuffled,
+		ID:       uuid.MustParse(deck.ID),
+		Shuffled: deck.Shuffled,
 	}
 	databaseDeck, _err := r.DB.WithTx(tx).CreateDeck(ctx, params)
 	if _err != nil {
@@ -65,8 +65,29 @@ func (r *Repository) GetDeck(ctx context.Context, deckID uuid.UUID) (*database.D
 	return &deck, nil
 }
 
-func (r *Repository) GetDeckRemainingCards(ctx context.Context, deckID uuid.UUID) ([]string, error) {
-	cards, err := r.DB.GetDeckRemainingCards(ctx, deckID)
+func (r *Repository) GetDeckRemainingCards(ctx context.Context, deckID uuid.UUID, limit *int) ([]string, error) {
+	dbLimit := sql.NullInt32{Valid: false}
+	if limit != nil {
+		dbLimit = sql.NullInt32{Valid: true, Int32: int32(*limit)}
+	}
+	params := database.GetDeckRemainingCardsParams{
+		DeckID: deckID,
+		Limit:  dbLimit,
+	}
+	cards, err := r.DB.GetDeckRemainingCards(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+
+	return cards, nil
+}
+
+func (r *Repository) DrawCards(ctx context.Context, deckID uuid.UUID) ([]string, error) {
+	params := database.GetDeckRemainingCardsParams{
+		DeckID: deckID,
+		Limit:  sql.NullInt32{Valid: false},
+	}
+	cards, err := r.DB.GetDeckRemainingCards(ctx, params)
 	if err != nil {
 		return nil, err
 	}

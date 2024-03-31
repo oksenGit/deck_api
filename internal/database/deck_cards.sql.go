@@ -7,6 +7,7 @@ package database
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/google/uuid"
 )
@@ -40,10 +41,16 @@ SELECT card_code FROM deck_cards
 WHERE deck_id = $1
 AND drawn = false
 ORDER BY "order" ASC
+LIMIT $2::int
 `
 
-func (q *Queries) GetDeckRemainingCards(ctx context.Context, deckID uuid.UUID) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, getDeckRemainingCards, deckID)
+type GetDeckRemainingCardsParams struct {
+	DeckID uuid.UUID
+	Limit  sql.NullInt32
+}
+
+func (q *Queries) GetDeckRemainingCards(ctx context.Context, arg GetDeckRemainingCardsParams) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, getDeckRemainingCards, arg.DeckID, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
