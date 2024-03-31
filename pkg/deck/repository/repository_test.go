@@ -106,4 +106,17 @@ func TestGetDeckWithRemainingCards(t *testing.T) {
 			t.Errorf("Expected card %v to be %v, got %v", i, deckObj.Cards[i], card)
 		}
 	}
+
+	// make int pointer with default value of 5
+	limit := new(int)
+	*limit = 5
+	remainingCards, err = repo.GetDeckRemainingCards(context.Background(), dbDeck.ID, limit)
+
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	if len(remainingCards) != *limit {
+		t.Errorf("Expected %v remaining cards, got %v", *limit, len(remainingCards))
+	}
 }
