@@ -17,6 +17,7 @@ func Init() *sql.DB {
 	// Build connection string
 	connStr := os.Getenv("DB_URL")
 
+	log.Printf(connStr)
 	// Connect to PostgreSQL database
 	DB, err = sql.Open("postgres", connStr)
 	if err != nil {

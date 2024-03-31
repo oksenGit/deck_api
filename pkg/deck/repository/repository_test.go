@@ -6,25 +6,15 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/joho/godotenv"
 	"github.com/oksenGit/deck_api/internal/database"
 	"github.com/oksenGit/deck_api/internal/deck"
 	"github.com/oksenGit/deck_api/pkg/deck/db"
 )
 
 func TestMain(m *testing.M) {
-
-	err := godotenv.Load("../../../.env.test")
-	if err != nil {
-		panic("Error loading .env.test file")
-	}
-
 	db.Init()
-	
 	defer db.Close()
-
 	code := m.Run()
-
 	os.Exit(code)
 }
 
