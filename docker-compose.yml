@@ -10,12 +10,13 @@ services:
     env_file:
       - .env
     command: ["./main"]
+    restart: on-failure
 
   db:
     image: postgres:latest
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: deck 
+      POSTGRES_DB: deck
     ports:
       - "54322:5432"
